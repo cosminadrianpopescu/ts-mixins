@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "outDir": "./testing",
+        "types": [
+            "jasmine",
+            "node"
+        ],
+        "baseUrl": "./",
+        "sourceMap": true,
+        "declaration": false,
+        "module": "commonjs",
+        "allowSyntheticDefaultImports": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "target": "esnext",
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "lib": [
+            "es2018",
+            "dom"
+        ]
+    },
+    "include": [
+        "ts/**/*.spec.ts",
+        "ts/**/*.d.ts",
+        "ts/**/*.ts"
+    ]
+}
