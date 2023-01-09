@@ -4,10 +4,16 @@ export type ClassConstructor<T = any> = {new(): T};
 const MIXINS = '--mixins--';
 const PROPS = '--props--';
 
+let ALLOW_NAME_DUPLICATES = false;
+
 export class BaseMixin<T = any> {
     public get m(): T {
         return this as any;
     }
+}
+
+export function allowNameDuplicatesInMixins() {
+    ALLOW_NAME_DUPLICATES = true;
 }
 
 function throwError(c: ClassConstructor) {
@@ -15,20 +21,27 @@ function throwError(c: ClassConstructor) {
     throw 'NAME_COLLISION';
 }
 
+function _copyProperties(src: ClassConstructor, dest: ClassConstructor) {
+    const props = Object.getOwnPropertyNames(dest.prototype);
+    Object.getOwnPropertyNames(src.prototype)
+        .filter(k => k != 'constructor')
+        .forEach(k => {
+            if (!ALLOW_NAME_DUPLICATES && props.indexOf(k) != -1) {
+                throwError(src);
+            }
+
+            Object.defineProperty(dest.prototype, k, Object.getOwnPropertyDescriptor(src.prototype, k))
+        });
+}
+
 export function Mixin(...ctors: Array<ClassConstructor>) {
     return function(ctor: ClassConstructor): any {
-        ctor[MIXINS] = [];
+        ctor[MIXINS] = ctors;
         (ctors || []).forEach(c => {
-            const props = Object.getOwnPropertyNames(ctor.prototype);
-            Object.getOwnPropertyNames(c.prototype)
-                .filter(k => k != 'constructor')
-                .forEach(k => {
-                    if (props.indexOf(k) != -1) {
-                        throwError(c);
-                    }
-
-                    ctor.prototype[k] = c.prototype[k];
-                })
+            _copyProperties(c, ctor);
+            if (c[MIXINS]) {
+                _copyProperties(Object.getPrototypeOf(c), ctor);
+            }
         });
 
         const result = class extends ctor {
@@ -39,14 +52,14 @@ export function Mixin(...ctors: Array<ClassConstructor>) {
                 (ctors || []).forEach(c => {
                     const mixin = new c();
                     const mixinProps = Object.getOwnPropertyNames(mixin);
-                    if (mixinProps.filter(p => ctor[PROPS].indexOf(p) != -1).length > 0) {
+                    if (!ALLOW_NAME_DUPLICATES && mixinProps.filter(p => ctor[PROPS].indexOf(p) != -1).length > 0) {
                         throwError(c);
                     }
 
                     mixinProps.forEach(p => this[p] = mixin[p]);
 
                     ctor[PROPS].push(...mixinProps);
-                    ctor[MIXINS].push(mixin);
+                    //ctor[MIXINS].push(mixin);
                 })
             }
         }
