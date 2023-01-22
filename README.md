@@ -61,7 +61,7 @@ type checking that typescript offers.
 
 ## Method 1: `Mixin` annotation
 
-If you are inside of a framework where if you don't instantiate your classes,
+If you are inside of a framework where you can't instantiate your classes,
 or if you want to have the features available inside of the `MyService` other
 methods, then you should use the `Mixin` annotation, like this:
 
@@ -80,8 +80,9 @@ new features have been added to the class.
 class ChildWithMixins extends BaseMixin<WithFeature1 & WithFeature2> {
     public method() {
         this.| 
-            +------------+ // The only autocomplete option that you have
-            | method     | // here, is method.
+            +------------+ 
+            | m          | // The only autocomplete option that you have
+            | method     | // here, is method and the `m` object.
             +------------+
     }
 
@@ -98,10 +99,9 @@ class ChildWithMixins extends BaseMixin<WithFeature1 & WithFeature2> {
 
 ## Method 2: `MixinFactory` function
 
-If you don't care about what is inside your classes, or you just want to
-create a new class from multiple defined classes, you can use the
-`MixinFactory` function. By using this function, you don't have to use the `m`
-object anymore. 
+If you just want to create a new class from multiple defined classes, you can
+use the `MixinFactory` function. By using this function, you don't have to use
+the `m` object anymore. 
 
 ```typescript
 const instance = MixinFactory(WithFeature1, WithFeature2);
