@@ -8,7 +8,7 @@ function buildInstance() {
 
 }
 
-export class BaseMixin<T = any> {
+export class BaseMixin<T = {}> {
     constructor() {
         const ctor = this.constructor;
         const ctors = ctor[MIXINS];

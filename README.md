@@ -22,6 +22,7 @@ Given the following classes:
 class WithFeature1 {
     private _f1;
     private _init = 'init';
+    public stringParam = 'abc';
     public feature1() {
         this._f1 = 'f1';
     }
@@ -58,7 +59,7 @@ gone.
 This library proposes an alternative way of doing the mixins, keeping all the
 type checking that typescript offers. 
 
-## Method 1: `Mixin` annotation.
+## Method 1: `Mixin` annotation
 
 If you are inside of a framework where if you don't instantiate your classes,
 or if you want to have the features available inside of the `MyService` other
@@ -86,10 +87,63 @@ class ChildWithMixins extends BaseMixin<WithFeature1 & WithFeature2> {
 
     public method() {
         this.m.|
-              +------------+ // Using the `m` object (from mixins), you 
-              | feature1   | // get all the features added by the `Mixin`
-              | feature2   | // annotation
-              +------------+
+              +-------------+ 
+              | stringParam | // Using the `m` object (from mixins), you 
+              | feature1    | // get all the features added by the `Mixin`
+              | feature2    | // annotation
+              +-------------+
     }
 }
 ```
+
+## Method 2: `MixinFactory` function
+
+If you don't care about what is inside your classes, or you just want to
+create a new class from multiple defined classes, you can use the
+`MixinFactory` function. By using this function, you don't have to use the `m`
+object anymore. 
+
+```typescript
+const instance = MixinFactory(WithFeature1, WithFeature2);
+
+instance.
+        +--------------+
+        | stringParams |
+        | feature1     |
+        | feature2     |
+        +--------------+
+```
+
+As you can see, here you can directly access the properties of the mixins,
+without the need of declaring any generic type and without the need to use any
+`m` object.
+
+## Downsides
+
+The only downside of this, is the extending of the `BaseMixin` class in order
+to make the compiler happy (when using the `m` object).
+
+But please note that the `BaseMixin` has the generic type optional. This is
+because you might want to extend your own base class in a bigger project. In
+case that you have, let's say a `BaseClass` that will extend the `BaseMixin`
+class, then all your classes can extend the `BaseClass`, and you only make
+them generic when you need to.
+
+```typescript
+export class BaseClass<T = {}> extends BaseMixin<T> {
+    ...
+}
+
+export class ChildClass1 extends BaseClass {
+    ...
+}
+
+@Mixin(WithFeature1, WithFeature2)
+export class ChildClass2 extends BaseClass<WithFeature1 & WithFeature2> {
+
+}
+```
+
+Notice that the `ChildClass1` is not generic, since it does need any features.
+But `ChildClass2`, which needs the features `WithFeature1` and `WithFeature2`,
+is generic of the type `WithFeature1 & WithFeature2`.
